@@ -1,101 +1,68 @@
 #include <iostream>
 #include <string>
-#include <vector>
-
 using namespace std;
 
-int transfer(string str) {
-    int num = 0, index = 1;
-    for (int i = 0; i < str.size() - 1; i++) {
-        index *= 10;
+int getInt(string str){
+    int value = 0;
+    for (int i = 0; i < str.length(); i++) {
+        value *= 10;
+        value += (int(str[i]) - 48);
     }
-
-    for (int i = 0; i < str.size(); i++) {
-        num += ((int) str[i] - 48) * index;
-        index /= 10;
-    }
-
-    return num;
+    return value;
 }
 
-
-class Stack {
-    int top;
-    int size;
-    int capacity;
-    int *stack;
+class BufferForRPN{
 public:
-    Stack(int capacity) {
-        this->top = -1;
-        this->size = 0;
-        this->capacity = capacity;
-        this->stack = new int(capacity);
+    long long bufferIndex = -1;
+    int subBuffer[1000];
+
+    int getLastBufferValue(){
+        return subBuffer[bufferIndex];
     }
 
-    void push(int value) {
-        size++;
-        stack[++top] = value;
+    void addNewValue(int value){
+        subBuffer[++bufferIndex] = value;
     }
 
-    int pop() {
-        size--;
-        return stack[top--];
-    };
-
-    void printStack() {
-        cout << "Start" << endl;
-        for (int i = top; i >= 0; i--) {
-            cout << "|" << stack[i] << "|" << endl;
-        }
-        cout << "End" << endl;
+    void valueErase(){
+        subBuffer[bufferIndex] = 0;
+        bufferIndex --;
     }
 
-    bool isEmpty() {
-        return size == 0;
+    void sumValue(){
+        int temp = getLastBufferValue();
+        valueErase();
+        subBuffer[bufferIndex] += temp;
     }
 
-    int stackSize() {
-        return size;
+    void diffValue(){
+        int temp = getLastBufferValue();
+        valueErase();
+        subBuffer[bufferIndex] -= temp;
     }
 };
 
-int main() {
-    string str;
-    getline(cin, str);
-    Stack stack(10000);
-
-    int result = 0;
-
-    string temp = "";
-    for (int i = 0; i < str.size(); i++) {
-        if (str[i] != ' ' && str[i] != '+' && str[i] != '-') {
-            temp += str[i];
+int main(){
+    string reversePN;
+    getline(cin, reversePN);
+    string subLine;
+    BufferForRPN buffer;
+    for (int i = 0; i < reversePN.length(); i ++){
+        if (reversePN[i] != ' ' && reversePN[i] != '+' && reversePN[i] != '-'){
+            subLine += reversePN[i];
         }
-        else if (str[i] == ' ' && temp!=""){
-            stack.push(transfer(temp));
-            temp = "";
+        else if (reversePN[i] == ' ' && subLine != ""){
+            buffer.addNewValue(getInt(subLine));
+            subLine = "";
         }
-        else if (str[i] == '+'){
-            if (stack.stackSize() == 2){
-                result += stack.pop();
-                result += stack.pop();
-            }
-            else{
-                result+=stack.pop();
-            }
+        else if (reversePN[i] == '+'){
+            buffer.sumValue();
         }
-        else if (str[i] == '-'){
-            if (stack.stackSize() == 2){
-                result -= stack.pop();
-                result += stack.pop();
-            }
-            else{
-                result-=stack.pop();
-            }
+        else if (reversePN[i] == '-'){
+            buffer.diffValue();
         }
     }
+    cout <<  buffer.subBuffer[buffer.bufferIndex] << endl;
 
-    cout << result;
 
-    return 0;
 }
